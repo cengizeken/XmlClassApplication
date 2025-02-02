@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using XmlClassApplication.Models;
 using XmlClassApplication.Repositories;
+using XmlClassApplication.Service;
 
 namespace XmlClassApplication
 {
@@ -21,21 +22,23 @@ namespace XmlClassApplication
         private BindingList<Empedans> empedansOlcumleriBinding = new BindingList<Empedans>();
         private IXmlRepository xmlRepository;
         private string xmlFilePath = "test.xml";
-
+        private TestService testService;
         public MainForm()
         {
             InitializeComponent();
-            dgvKalibrasyonBilgileri.CellValueChanged += (s, e) => xmlRepository.SaveXml(xmlFilePath, testData);
-            dgvKalibrasyonBilgileri.RowsRemoved += (s, e) => xmlRepository.SaveXml(xmlFilePath, testData);
-            dgvEmpedansOlcumleriBeta.RowsRemoved += (s, e) => xmlRepository.SaveXml(xmlFilePath, testData);
-            dgvEmpedansOlcumleriBeta.CellValueChanged += (s, e) => xmlRepository.SaveXml(xmlFilePath, testData);
+            dgvKalibrasyonBilgileri.CellValueChanged += (s, e) => testService.SaveTestData(testData);
+            dgvKalibrasyonBilgileri.RowsRemoved += (s, e) => testService.SaveTestData(testData);
+            dgvEmpedansOlcumleriBeta.RowsRemoved += (s, e) => testService.SaveTestData(testData);
+            dgvEmpedansOlcumleriBeta.CellValueChanged += (s, e) => testService.SaveTestData(testData);
             xmlRepository = new XmlRepository();
+            testService = new TestService(xmlFilePath);
             LoadData();
         }
         Test testData;
         private void LoadData()
         {
-            testData = xmlRepository.LoadXml(xmlFilePath);
+            //testData = xmlRepository.LoadXml(xmlFilePath);
+            testData = testService.GetTestData();
             testBilgileriBinding.DataSource = testData.TestBilgileri;
             testSonuclariBinding.DataSource = testData.TestSonuclari;
             testCihazlariBinding = new BindingList<TestCihazi>(testData.TestBilgileri.TestCihazlari);
@@ -46,8 +49,6 @@ namespace XmlClassApplication
             {
                 empedansOlcumleriBinding = new BindingList<Empedans>(betaOlcumleri.EmpedansDegerleri);
             }
-
-            
 
             tbTestBaslangicZamani.DataBindings.Clear();
             tbTestBitisZamani.DataBindings.Clear();
@@ -71,7 +72,7 @@ namespace XmlClassApplication
                 
             };
             testData.TestBilgileri.TestCihazlari = new List<TestCihazi>(testCihazlariBinding);
-            xmlRepository.SaveXml(xmlFilePath, testData);
+            testService.SaveTestData(testData);
             MessageBox.Show("Veriler başarıyla kaydedildi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
